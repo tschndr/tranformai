@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --app --eslint --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(cd \"C:\\\\Users\\\\schne\\\\Downloads\\\\tool-app\" && mv project-brief.md ../project-brief.md.bak)",
+      "Bash(npm install *)",
+      "Bash(mv ../project-brief.md.bak project-brief.md)",
+      "Bash(npm run *)",
+      "Bash(DATABASE_URL=\"postgresql://user:pass@ep-example.neon.tech/dbname?sslmode=require\" npm run build)",
+      "Bash(docker --version)",
+      "Bash(where psql *)",
+      "Bash(where postgres *)",
+      "Bash(DATABASE_URL=\"postgresql://placeholder/placeholder\" npx drizzle-kit push --force)",
+      "Bash(node \"C:\\\\Users\\\\schne\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-schne-Downloads-tool-app\\\\831a59f9-b26d-4777-acd5-ab52fd697acc\\\\scratchpad\\\\setup-pglite.mjs\")",
+      "Bash(node scratchpad-setup-pglite.mjs)",
+      "Bash(npx tsx *)",
+      "Bash(npm uninstall *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/next-auth/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/@auth/drizzle-adapter/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/stripe/package.json'\\).version\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(npx tsc *)",
+      "Bash(node scripts/validate-batches.mjs)",
+      "Bash(rm -rf .pglite-data)",
+      "Bash(DATABASE_URL=\"postgresql://user:pass@ep-example.neon.tech/dbname?sslmode=require\" AUTH_SECRET=\"build-time-placeholder-secret-value-here-1234567890\" npm run build)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
