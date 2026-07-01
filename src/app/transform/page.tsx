@@ -120,8 +120,8 @@ export default async function TransformHubPage({
           All Transformations
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-neutral-600">
-          Pick a category below. Each tool does exactly one job, free, with no signup required
-          for your first 3 uses a day per tool.
+          Pick a category below. Each tool does exactly one job, free — 2 generations a day, no
+          signup required.
         </p>
       </div>
 

@@ -106,6 +106,16 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Prepaid generation credits (1 credit = 1 generation), purchased in one-off packs.
+// Never expire. Only usable by signed-in users.
+export const credits = pgTable("credits", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  balance: integer("balance").notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Usage / rate limiting ---
 
 export const usageLogs = pgTable("usage_logs", {
@@ -116,5 +126,8 @@ export const usageLogs = pgTable("usage_logs", {
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   ipHash: text("ip_hash").notNull(),
   tokensUsed: integer("tokens_used").notNull(),
+  // How this generation was paid for — "free" counts against the daily free
+  // allowance; "credit" and "subscription" do not.
+  source: text("source").notNull().default("free"), // free | credit | subscription
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

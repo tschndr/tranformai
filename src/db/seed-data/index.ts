@@ -17,7 +17,7 @@ const flagship: ToolSeed = {
     "You are an expert business communication editor. Rewrite the following email so it reads as professional, polished, and appropriate for a workplace audience. Preserve the original meaning, key facts, and requests exactly — do not add or remove information. Fix grammar, tighten wording, and adjust tone so it sounds confident and courteous without becoming stiff or robotic. Return only the rewritten email text, with no preamble, no explanation, and no quotation marks around it.\n\nOriginal email:\n{input}",
   seoTitle: "Email to Professional Rewrite — Free AI Tone Converter",
   seoDescription:
-    "Paste a casual or rough email and get a polished, professional rewrite in seconds. Free, no signup required for your first 3 rewrites a day.",
+    "Paste a casual or rough email and get a polished, professional rewrite in seconds. Free, no signup required for your first 2 rewrites a day.",
   h1: "Turn Any Email Into a Professional, Polished Version",
   introCopy: `Most of us write emails the way we talk — in a hurry, mid-thought, sometimes venting a little more than we should. That's fine for a text to a friend, but it can undercut you when the reader is a manager, a client, or someone you've never met. A message that reads as blunt, rushed, or overly casual can make a strong point land wrong, no matter how solid the underlying request is.
 
@@ -52,7 +52,7 @@ Best regards,
     {
       question: "How many free rewrites do I get?",
       answer:
-        "You can run up to 3 free rewrites per day for this tool without signing up. Subscribe for unlimited generations across every tool on the site.",
+        "You get 2 free generations a day across all tools, no signup required. After that, buy a pack of credits or subscribe for unlimited generations across every tool on the site.",
     },
     {
       question: "Can I use this for emails in languages other than English?",

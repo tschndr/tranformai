@@ -2,12 +2,14 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { usageLogs } from "@/db/schema";
 
-const DAILY_LIMIT_PER_TOOL = 3;
+const DAILY_FREE_LIMIT = 2;
 
-export async function checkRateLimit(
-  transformationId: number,
-  identity: { userId?: string; ipHash: string }
-) {
+// Counts only "free"-source generations in the last 24h, across ALL tools,
+// keyed by user id (signed in) or hashed IP (anonymous).
+export async function checkDailyFreeLimit(identity: {
+  userId?: string;
+  ipHash: string;
+}) {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const identityCondition = identity.userId
@@ -19,8 +21,8 @@ export async function checkRateLimit(
     .from(usageLogs)
     .where(
       and(
-        eq(usageLogs.transformationId, transformationId),
         identityCondition,
+        eq(usageLogs.source, "free"),
         gte(usageLogs.createdAt, since)
       )
     );
@@ -28,8 +30,8 @@ export async function checkRateLimit(
   const count = row?.count ?? 0;
 
   return {
-    allowed: count < DAILY_LIMIT_PER_TOOL,
-    remaining: Math.max(0, DAILY_LIMIT_PER_TOOL - count),
-    limit: DAILY_LIMIT_PER_TOOL,
+    allowed: count < DAILY_FREE_LIMIT,
+    remaining: Math.max(0, DAILY_FREE_LIMIT - count),
+    limit: DAILY_FREE_LIMIT,
   };
 }

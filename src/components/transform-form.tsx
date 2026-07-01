@@ -16,8 +16,9 @@ export function TransformForm({
   const [output, setOutput] = useState(exampleOutput);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [upgradeRequired, setUpgradeRequired] = useState(false);
+  const [gate, setGate] = useState<{ needsAccount: boolean } | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
   const [unlimited, setUnlimited] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -25,7 +26,7 @@ export function TransformForm({
     if (!input.trim()) return;
     setLoading(true);
     setError(null);
-    setUpgradeRequired(false);
+    setGate(null);
     setCopied(false);
 
     try {
@@ -37,7 +38,7 @@ export function TransformForm({
       const data = await res.json();
 
       if (res.status === 402) {
-        setUpgradeRequired(true);
+        setGate({ needsAccount: !!data.needsAccount });
         return;
       }
       if (!res.ok) {
@@ -47,6 +48,7 @@ export function TransformForm({
 
       setOutput(data.output);
       setRemaining(typeof data.remaining === "number" ? data.remaining : null);
+      setCredits(typeof data.creditsRemaining === "number" ? data.creditsRemaining : null);
       setUnlimited(!!data.unlimited);
     } catch {
       setError("Network error. Please try again.");
@@ -83,27 +85,44 @@ export function TransformForm({
             {loading ? "Transforming…" : "Transform →"}
           </button>
           {unlimited && <span className="text-xs font-medium text-neutral-500">Unlimited plan</span>}
-          {!unlimited && remaining !== null && (
+          {!unlimited && credits !== null && (
+            <span className="text-xs font-medium text-neutral-500">
+              {credits} {credits === 1 ? "credit" : "credits"} left
+            </span>
+          )}
+          {!unlimited && credits === null && remaining !== null && (
             <span className="text-xs font-medium text-neutral-500">
               {remaining} free {remaining === 1 ? "use" : "uses"} left today
             </span>
           )}
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {upgradeRequired && (
+        {gate && (
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm">
             <p className="font-medium text-neutral-900">
-              You&apos;ve used your 3 free generations for this tool today.
+              You&apos;ve used your 2 free generations for today.
             </p>
             <p className="mt-1 text-neutral-600">
-              Subscribe for unlimited generations across every tool on the site.
+              {gate.needsAccount
+                ? "Create a free account to buy credits, or subscribe for unlimited generations."
+                : "Buy a credit pack, or subscribe for unlimited generations across every tool."}
             </p>
-            <Link
-              href="/pricing"
-              className="mt-3 inline-block rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-            >
-              View plans →
-            </Link>
+            <div className="mt-3 flex gap-2">
+              <Link
+                href="/pricing"
+                className="inline-block rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+              >
+                View plans →
+              </Link>
+              {gate.needsAccount && (
+                <Link
+                  href="/sign-in"
+                  className="inline-block rounded-full border border-neutral-300 px-5 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400"
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

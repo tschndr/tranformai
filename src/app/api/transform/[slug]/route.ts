@@ -5,8 +5,9 @@ import { db } from "@/db";
 import { transformations, usageLogs } from "@/db/schema";
 import { getClientIp, hashIp } from "@/lib/hash-ip";
 import { runTransformation } from "@/lib/llm";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkDailyFreeLimit } from "@/lib/rate-limit";
 import { getActiveSubscription } from "@/lib/subscription";
+import { consumeCredit, addCredits } from "@/lib/credits";
 
 const MAX_INPUT_LENGTH = 4000;
 
@@ -42,35 +43,67 @@ export async function POST(
   const session = await auth();
   const userId = session?.user?.id;
   const subscription = userId ? await getActiveSubscription(userId) : null;
-
   const ipHash = hashIp(getClientIp(req.headers));
-  let remaining: number | null = null;
 
-  if (!subscription) {
-    const rateLimit = await checkRateLimit(transformation.id, { userId, ipHash });
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        {
-          error: "You've used your 3 free generations for this tool today.",
-          upgradeUrl: "/pricing",
-        },
-        { status: 402 }
-      );
-    }
-    remaining = rateLimit.remaining - 1;
+  async function generateAndLog(source: "free" | "credit" | "subscription") {
+    const { output, tokensUsed } = await runTransformation(
+      transformation.promptTemplate,
+      input
+    );
+    await db.insert(usageLogs).values({
+      transformationId: transformation.id,
+      userId,
+      ipHash,
+      tokensUsed,
+      source,
+    });
+    return output;
   }
 
-  const { output, tokensUsed } = await runTransformation(
-    transformation.promptTemplate,
-    input
+  // 1. Subscribers: unlimited.
+  if (subscription) {
+    const output = await generateAndLog("subscription");
+    return NextResponse.json({ output, unlimited: true, remaining: null });
+  }
+
+  // 2. Free daily allowance (2/day total across all tools).
+  const daily = await checkDailyFreeLimit({ userId, ipHash });
+  if (daily.allowed) {
+    const output = await generateAndLog("free");
+    return NextResponse.json({
+      output,
+      unlimited: false,
+      remaining: daily.remaining - 1,
+    });
+  }
+
+  // 3. Prepaid credits (signed-in users only). Reserve the credit up front so
+  //    concurrent requests can't overspend, and refund it if generation fails.
+  if (userId) {
+    const balanceAfter = await consumeCredit(userId);
+    if (balanceAfter !== null) {
+      try {
+        const output = await generateAndLog("credit");
+        return NextResponse.json({
+          output,
+          unlimited: false,
+          remaining: 0,
+          creditsRemaining: balanceAfter,
+        });
+      } catch (err) {
+        await addCredits(userId, 1); // refund — the generation didn't happen
+        throw err;
+      }
+    }
+  }
+
+  // 4. Out of free generations and credits.
+  return NextResponse.json(
+    {
+      error: "You've used your 2 free generations for today.",
+      upgradeUrl: "/pricing",
+      needsAccount: !userId,
+    },
+    { status: 402 }
   );
-
-  await db.insert(usageLogs).values({
-    transformationId: transformation.id,
-    userId,
-    ipHash,
-    tokensUsed,
-  });
-
-  return NextResponse.json({ output, remaining, unlimited: !!subscription });
 }

@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { db } from "@/db";
 import { subscriptions } from "@/db/schema";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, creditsForPriceId } from "@/lib/stripe";
+import { addCredits } from "@/lib/credits";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -27,7 +28,18 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId ?? session.client_reference_id ?? undefined;
-      if (userId && session.subscription) {
+
+      if (session.mode === "payment" && session.metadata?.kind === "credits" && userId) {
+        // One-time credit-pack purchase — grant credits based on the purchased
+        // line item (not the client-sent quantity).
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+          limit: 1,
+        });
+        const amount = creditsForPriceId(lineItems.data[0]?.price?.id);
+        if (session.payment_status === "paid" && amount) {
+          await addCredits(userId, amount);
+        }
+      } else if (userId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         await upsertSubscription(userId, sub);
       }

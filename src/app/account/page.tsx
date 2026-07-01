@@ -1,16 +1,19 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { getActiveSubscription } from "@/lib/subscription";
+import { getCreditBalance } from "@/lib/credits";
 import { BillingPortalButton } from "@/components/billing-portal-button";
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
 
-  const subscription = session.user.id ? await getActiveSubscription(session.user.id) : null;
+  const userId = session.user.id;
+  const subscription = userId ? await getActiveSubscription(userId) : null;
+  const credits = userId && !subscription ? await getCreditBalance(userId) : 0;
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 py-16">
+    <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-16">
       <div>
         <p className="text-sm font-medium text-neutral-500">• Account</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-neutral-900">
@@ -19,7 +22,7 @@ export default async function AccountPage() {
       </div>
 
       <div className="rounded-2xl border border-neutral-200 p-6">
-        <h2 className="text-sm font-medium text-neutral-500">Subscription</h2>
+        <h2 className="text-sm font-medium text-neutral-500">Plan</h2>
         {subscription ? (
           <>
             <p className="mt-2 text-lg font-semibold text-neutral-900">
@@ -31,13 +34,22 @@ export default async function AccountPage() {
         ) : (
           <>
             <p className="mt-2 text-neutral-600">
-              You&apos;re on the free plan — 3 generations per day, per tool.
+              You&apos;re on the free plan — 2 generations per day.
             </p>
+            <div className="mt-3 rounded-xl bg-neutral-50 px-4 py-3">
+              <p className="text-sm text-neutral-500">Credit balance</p>
+              <p className="text-2xl font-semibold text-neutral-900">
+                {credits} <span className="text-base font-normal text-neutral-500">credits</span>
+              </p>
+              <p className="mt-1 text-xs text-neutral-500">
+                Credits are used once your 2 free daily generations are spent.
+              </p>
+            </div>
             <a
               href="/pricing"
               className="mt-4 inline-block rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-700"
             >
-              Upgrade to unlimited
+              Buy credits or go unlimited
             </a>
           </>
         )}

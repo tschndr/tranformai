@@ -3,12 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type CheckoutBody =
+  | { plan: "monthly" | "annual" }
+  | { kind: "credits"; pack: "small" | "medium" | "large" };
+
 export function CheckoutButton({
-  plan,
+  request,
   children,
   className,
 }: {
-  plan: "monthly" | "annual";
+  request: CheckoutBody;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -21,7 +25,7 @@ export function CheckoutButton({
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify(request),
       });
 
       if (res.status === 401) {

@@ -58,7 +58,7 @@ export default async function CategoryPage({
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-neutral-600">
           {tools.length} free {label.toLowerCase()} transformation{tools.length === 1 ? "" : "s"}
-          . No signup required for your first 3 uses a day per tool.
+          . 2 free generations a day, no signup required.
         </p>
         <Link href="/transform" className="mt-4 inline-block text-sm text-neutral-500 underline hover:text-neutral-900">
           ← Back to all categories

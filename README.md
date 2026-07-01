@@ -2,7 +2,7 @@
 
 Programmatic-SEO web app: **334 single-purpose AI text-transformation tools** across 38
 categories, each with its own page (e.g. "turn an email into a professional-tone version").
-Free tier is 3 generations/day per tool; a Stripe subscription unlocks unlimited use.
+Free tier is 2 generations/day total; buy prepaid credits or a Stripe subscription for more.
 See [project-brief.md](./project-brief.md) for the original product spec and
 [DEPLOYMENT.md](./DEPLOYMENT.md) for full production setup.
 
@@ -40,16 +40,21 @@ full variable list and third-party setup is in [DEPLOYMENT.md](./DEPLOYMENT.md).
 - `src/app/sitemap.ts` / `src/app/robots.ts` — dynamic sitemap (all tools + categories) and robots.
 
 ### Paywall
-- `src/lib/rate-limit.ts` — 3 generations/day **per tool**, keyed by user id (signed in) or
-  hashed IP (anonymous), over a rolling 24h window.
-- `src/app/api/transform/[slug]/route.ts` — validates input, checks subscription, enforces the
-  limit (returns `402` with an upgrade prompt when exceeded), calls the LLM, logs token usage.
-- Subscribers bypass the limit entirely (`src/lib/subscription.ts`).
+Three tiers, checked in order per request in `src/app/api/transform/[slug]/route.ts`:
+1. **Subscription** → unlimited (`src/lib/subscription.ts`).
+2. **Free** → 2 generations/day total across all tools, keyed by user id (signed in) or hashed
+   IP (anonymous), rolling 24h window (`src/lib/rate-limit.ts`). Counts only `source: "free"` usage.
+3. **Credits** → signed-in users spend prepaid credits (`src/lib/credits.ts`); the credit is
+   reserved atomically before the LLM call and refunded if it fails.
+
+When all three are exhausted the route returns `402` with an upgrade prompt. `usage_logs.source`
+records how each generation was paid for.
 
 ### Auth & billing
 - `src/auth.ts` — Auth.js config (database sessions, Resend magic-link provider).
-- `src/app/api/stripe/checkout` / `portal` / `webhook` — Stripe Checkout, Customer Portal, and
-  the webhook that syncs subscription status into the `subscriptions` table.
+- `src/app/api/stripe/checkout` — subscription (recurring) and credit-pack (one-time) Checkout.
+- `src/app/api/stripe/webhook` — activates subscriptions and grants credits on purchase; `portal`
+  opens the Stripe Customer Portal. Credit packs are defined in `src/lib/stripe.ts` (`CREDIT_PACKS`).
 - `src/app/pricing/page.tsx`, `src/app/account/page.tsx`, `src/app/sign-in/` — the UI.
 
 ## Adding a new tool
