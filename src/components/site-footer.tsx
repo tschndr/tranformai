@@ -62,10 +62,10 @@ export function SiteFooter() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 pb-6 text-sm text-neutral-500 sm:flex-row sm:justify-between">
         <p>© {new Date().getFullYear()} Rewrite Anything. All rights reserved.</p>
         <div className="flex gap-4">
-          <Link href="/" className="transition-colors hover:text-neutral-900">
+          <Link href="/privacy" className="transition-colors hover:text-neutral-900">
             Privacy
           </Link>
-          <Link href="/" className="transition-colors hover:text-neutral-900">
+          <Link href="/terms" className="transition-colors hover:text-neutral-900">
             Terms
           </Link>
         </div>
