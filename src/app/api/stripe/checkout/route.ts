@@ -9,6 +9,7 @@ import {
   getStripe,
   type CreditPackId,
 } from "@/lib/stripe";
+import { getAppUrl } from "@/lib/app-url";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = getAppUrl(req);
 
   const [existing] = await db
     .select()

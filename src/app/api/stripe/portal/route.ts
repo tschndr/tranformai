@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { subscriptions } from "@/db/schema";
 import { getStripe } from "@/lib/stripe";
+import { getAppUrl } from "@/lib/app-url";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
@@ -21,7 +22,7 @@ export async function POST() {
     return NextResponse.json({ error: "No billing account found." }, { status: 404 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = getAppUrl(req);
 
   const portalSession = await getStripe().billingPortal.sessions.create({
     customer: sub.stripeCustomerId,
