@@ -17,10 +17,12 @@ export function CheckoutButton({
   className?: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleClick() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -33,20 +35,32 @@ export function CheckoutButton({
         return;
       }
 
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setLoading(false);
+      let data: { url?: string; error?: string } | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // non-JSON response (e.g. a 500 HTML error page)
       }
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      setError(data?.error ?? `Checkout failed (HTTP ${res.status}). Please try again.`);
     } catch {
+      setError("Network error. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <button onClick={handleClick} disabled={loading} className={className}>
-      {loading ? "Redirecting…" : children}
-    </button>
+    <span className="flex flex-col gap-1">
+      <button onClick={handleClick} disabled={loading} className={className}>
+        {loading ? "Redirecting…" : children}
+      </button>
+      {error && <span className="text-xs text-red-500">{error}</span>}
+    </span>
   );
 }
