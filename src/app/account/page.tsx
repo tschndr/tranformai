@@ -34,15 +34,15 @@ export default async function AccountPage() {
         ) : (
           <>
             <p className="mt-2 text-neutral-600">
-              You&apos;re on the free plan — 2 generations per day.
+              You&apos;re on the free plan — 2 rewrites per day.
             </p>
-            <div className="mt-3 rounded-xl bg-neutral-50 px-4 py-3">
+            <div className="mt-3 rounded-xl bg-accent-soft px-4 py-3">
               <p className="text-sm text-neutral-500">Credit balance</p>
               <p className="text-2xl font-semibold text-neutral-900">
                 {credits} <span className="text-base font-normal text-neutral-500">credits</span>
               </p>
               <p className="mt-1 text-xs text-neutral-500">
-                Credits are used once your 2 free daily generations are spent.
+                Credits are used once your 2 free daily rewrites are spent.
               </p>
             </div>
             <a

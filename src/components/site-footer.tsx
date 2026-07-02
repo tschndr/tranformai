@@ -1,25 +1,28 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: "Navigation",
+    title: "Product",
     links: [
-      { href: "/", label: "Home" },
-      { href: "/transform", label: "Browse" },
+      { href: "/transform", label: "All tools" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/transform/email-to-professional-rewrite", label: "Email rewriter" },
     ],
   },
   {
-    title: "Tools",
+    title: "Popular categories",
     links: [
-      { href: "/transform/email-to-professional-rewrite", label: "Email → Professional" },
-      { href: "/transform", label: "All transformations" },
+      { href: "/transform/category/email", label: "Email" },
+      { href: "/transform/category/resume", label: "Resume" },
+      { href: "/transform/category/blog", label: "Blog" },
     ],
   },
   {
-    title: "Resources",
+    title: "Account",
     links: [
-      { href: "/", label: "About" },
-      { href: "/", label: "Contact" },
+      { href: "/sign-in", label: "Sign in" },
+      { href: "/account", label: "Your account" },
     ],
   },
 ];
@@ -28,11 +31,11 @@ export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-neutral-200">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16 sm:flex-row sm:justify-between">
-        <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-full bg-neutral-900" />
-          <span className="text-lg font-semibold tracking-tight text-neutral-900">
-            TransformAI
-          </span>
+        <div className="max-w-xs">
+          <Logo />
+          <p className="mt-4 text-sm text-neutral-500">
+            334 focused AI tools to rewrite, summarize, and transform any text — in seconds.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
@@ -44,7 +47,7 @@ export function SiteFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-neutral-500 hover:text-neutral-900"
+                      className="text-sm text-neutral-500 transition-colors hover:text-neutral-900"
                     >
                       {link.label}
                     </Link>
@@ -57,20 +60,20 @@ export function SiteFooter() {
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 pb-6 text-sm text-neutral-500 sm:flex-row sm:justify-between">
-        <p>© {new Date().getFullYear()} TransformAI. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Rewrite Anything. All rights reserved.</p>
         <div className="flex gap-4">
-          <Link href="/" className="hover:text-neutral-900">
-            Privacy Policy
+          <Link href="/" className="transition-colors hover:text-neutral-900">
+            Privacy
           </Link>
-          <Link href="/" className="hover:text-neutral-900">
-            Terms of Use
+          <Link href="/" className="transition-colors hover:text-neutral-900">
+            Terms
           </Link>
         </div>
       </div>
 
-      <div className="overflow-hidden pt-4">
-        <p className="translate-y-1/3 text-center text-[16vw] leading-none font-bold tracking-tight text-neutral-100 select-none">
-          TransformAI
+      <div aria-hidden className="overflow-hidden pt-4">
+        <p className="translate-y-1/4 text-center text-[15vw] leading-none font-bold tracking-tighter text-neutral-100 select-none">
+          rewrite&#8202;anything
         </p>
       </div>
     </footer>
