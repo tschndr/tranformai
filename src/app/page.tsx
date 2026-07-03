@@ -1,10 +1,25 @@
 import Link from "next/link";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { transformations } from "@/db/schema";
 import { CategoryIcon, Briefcase, GraduationCap, PenLine, ArrowRight } from "@/components/icons";
 
-export const dynamic = "force-dynamic";
+// Curated high-intent tools surfaced as direct deep links on the homepage.
+// Rendered only if present in the DB, so a missing slug degrades gracefully.
+const POPULAR_TOOL_SLUGS = [
+  "email-to-professional-rewrite",
+  "paragraph-to-bullet-points",
+  "resume-bullet-to-impact-statement",
+  "job-description-to-resume-bullet",
+  "meeting-notes-to-summary",
+  "text-to-executive-summary",
+  "blog-to-twitter-thread",
+  "linkedin-post-to-hook-variants",
+];
+
+// Content changes only when the tool catalog is re-seeded — cache and revalidate
+// hourly (ISR) instead of rendering per request.
+export const revalidate = 3600;
 
 const CATEGORY_SHOWCASE = [
   { slug: "email", label: "Email", desc: "Professional, concise & friendly rewrites" },
@@ -47,10 +62,23 @@ export default async function Home() {
     .select({ count: sql<number>`count(*)::int` })
     .from(transformations);
 
+  const [{ categoryCount }] = await db
+    .select({ categoryCount: sql<number>`count(distinct ${transformations.category})::int` })
+    .from(transformations);
+
+  const popularRows = await db
+    .select({ slug: transformations.slug, h1: transformations.h1, category: transformations.category })
+    .from(transformations)
+    .where(inArray(transformations.slug, POPULAR_TOOL_SLUGS));
+  // Preserve the curated order from POPULAR_TOOL_SLUGS.
+  const popularTools = POPULAR_TOOL_SLUGS.map((slug) =>
+    popularRows.find((r) => r.slug === slug)
+  ).filter((t): t is (typeof popularRows)[number] => Boolean(t));
+
   const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n).trimEnd() + "…" : s);
 
   return (
-    <>
+    <main>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="bg-brand-glow pointer-events-none absolute inset-x-0 top-0 h-[560px]" />
@@ -74,13 +102,13 @@ export default async function Home() {
           <form
             action="/transform"
             method="GET"
-            className="animate-rise mt-8 flex w-full max-w-lg items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-lg shadow-neutral-900/5 focus-within:border-neutral-400"
+            className="field-pill animate-rise mt-8 flex w-full max-w-lg items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-lg shadow-neutral-900/5 focus-within:border-neutral-400"
           >
             <input
               name="q"
               aria-label="Search tools"
               placeholder="Search tools — try “email” or “summarize”…"
-              className="w-full bg-transparent px-4 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+              className="w-full bg-transparent px-4 py-2 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none"
             />
             <button
               type="submit"
@@ -109,14 +137,14 @@ export default async function Home() {
             <div className="bg-brand-gradient rounded-3xl p-2 shadow-2xl shadow-violet-900/20">
               <div className="rounded-[1.25rem] bg-white p-5 sm:p-7">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-xs font-semibold tracking-wide text-neutral-400 uppercase">
+                  <span className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
                     Live example
                   </span>
                   <span className="text-xs font-medium text-neutral-500">{featured.h1}</span>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
                   <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-left">
-                    <p className="mb-2 text-xs font-medium text-neutral-400">Your text</p>
+                    <p className="mb-2 text-xs font-medium text-neutral-500">Your text</p>
                     <p className="text-sm leading-relaxed text-neutral-600">
                       {clip(featured.exampleInput, 150)}
                     </p>
@@ -152,7 +180,7 @@ export default async function Home() {
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 py-8 text-center sm:grid-cols-4">
           {[
             [`${count}`, "focused tools"],
-            ["38", "categories"],
+            [`${categoryCount}`, "categories"],
             ["2 / day", "free, no signup"],
             ["~2s", "to a clean rewrite"],
           ].map(([big, small]) => (
@@ -168,9 +196,9 @@ export default async function Home() {
       <section className="mx-auto max-w-4xl px-6 py-24 text-center">
         <p className="text-3xl font-semibold leading-snug tracking-tight text-neutral-900 sm:text-4xl">
           Paste your text, pick a tool, and get a clean rewrite{" "}
-          <span className="text-neutral-400">— professional, concise, or simplified —</span>{" "}
+          <span className="text-neutral-500">— professional, concise, or simplified —</span>{" "}
           without writing a single prompt{" "}
-          <span className="text-neutral-400">or signing up.</span>
+          <span className="text-neutral-500">or signing up.</span>
         </p>
       </section>
 
@@ -207,6 +235,35 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Popular tools — direct deep links */}
+      {popularTools.length > 0 && (
+        <section className="mx-auto max-w-5xl px-6 pb-24">
+          <div className="mb-10 text-center">
+            <p className="text-sm font-medium text-accent">Popular right now</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">
+              Jump straight into a tool
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {popularTools.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/transform/${t.slug}`}
+                className="group flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-lg hover:shadow-neutral-900/5"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <CategoryIcon slug={t.category} className="h-[18px] w-[18px]" />
+                </span>
+                <span className="text-sm font-semibold leading-snug text-neutral-900">{t.h1}</span>
+                <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-neutral-600 transition-colors group-hover:text-accent">
+                  Try it <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Roles */}
       <section className="mx-auto max-w-5xl px-6 pb-24">
         <div className="grid gap-8 sm:grid-cols-3">
@@ -242,6 +299,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

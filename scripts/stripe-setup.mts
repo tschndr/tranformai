@@ -1,8 +1,8 @@
 import "dotenv/config";
 import Stripe from "stripe";
 
-// Creates the products, prices, and webhook endpoint for TransformAI in whatever
-// mode the STRIPE_SECRET_KEY belongs to (test vs live). Run once.
+// Creates the products, prices, and webhook endpoint for Rewrite Anything in
+// whatever mode the STRIPE_SECRET_KEY belongs to (test vs live). Run once.
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) {
   console.error("STRIPE_SECRET_KEY is not set in .env");
@@ -15,8 +15,8 @@ console.log(`Setting up Stripe in ${mode} mode for ${appUrl}\n`);
 
 // --- Subscription product + prices ---
 const subProduct = await stripe.products.create({
-  name: "TransformAI Unlimited",
-  description: "Unlimited AI text transformations across every tool.",
+  name: "Rewrite Anything Unlimited",
+  description: "Unlimited AI text rewrites across every tool, on our best model.",
 });
 const monthly = await stripe.prices.create({
   product: subProduct.id,
@@ -28,15 +28,15 @@ const monthly = await stripe.prices.create({
 const annual = await stripe.prices.create({
   product: subProduct.id,
   currency: "usd",
-  unit_amount: 6400, // $64.00
+  unit_amount: 8000, // $80.00 (≈2 months free vs $8/mo)
   recurring: { interval: "year" },
   nickname: "Unlimited Annual",
 });
 
 // --- Credit pack product + one-time prices ---
 const creditProduct = await stripe.products.create({
-  name: "TransformAI Credits",
-  description: "Prepaid generation credits. 1 credit = 1 generation. Never expire.",
+  name: "Rewrite Anything Credits",
+  description: "Prepaid rewrite credits. 1 credit = 1 rewrite. Never expire.",
 });
 const small = await stripe.prices.create({
   product: creditProduct.id,

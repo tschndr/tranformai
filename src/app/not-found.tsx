@@ -18,13 +18,13 @@ export default function NotFound() {
       <form
         action="/transform"
         method="GET"
-        className="flex w-full items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-sm focus-within:border-neutral-400"
+        className="field-pill flex w-full items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-sm focus-within:border-neutral-400"
       >
         <input
           name="q"
           aria-label="Search tools"
           placeholder="Search tools…"
-          className="w-full bg-transparent px-4 py-2 text-sm placeholder:text-neutral-400 focus:outline-none"
+          className="w-full bg-transparent px-4 py-2 text-sm placeholder:text-neutral-500 focus:outline-none"
         />
         <button type="submit" className="shrink-0 rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700">
           Search

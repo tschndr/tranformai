@@ -10,6 +10,8 @@ function base(props: IconProps) {
     strokeWidth: 1.75,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+    focusable: false,
     ...props,
   };
 }
@@ -82,6 +84,12 @@ export const Sparkles = (p: IconProps) => (
 );
 export const ChevronDown = (p: IconProps) => (
   <svg {...base(p)}><path d="m6 9 6 6 6-6" /></svg>
+);
+export const Menu = (p: IconProps) => (
+  <svg {...base(p)}><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+);
+export const X = (p: IconProps) => (
+  <svg {...base(p)}><path d="M18 6 6 18M6 6l12 12" /></svg>
 );
 export const ArrowRight = (p: IconProps) => (
   <svg {...base(p)}><path d="M5 12h14M13 6l6 6-6 6" /></svg>

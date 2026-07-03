@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { signIn } from "@/auth";
 import { LogoMark } from "@/components/logo";
 
@@ -23,6 +24,8 @@ export default function SignInPage() {
         action={async (formData) => {
           "use server";
           const email = formData.get("email");
+          // Require the Terms + Privacy acknowledgment server-side too.
+          if (!formData.get("terms")) return;
           if (typeof email !== "string" || !email) return;
           await signIn("resend", { email, redirectTo: "/account" });
         }}
@@ -35,6 +38,31 @@ export default function SignInPage() {
           placeholder="you@example.com"
           className="w-full rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm shadow-sm transition-colors focus:border-neutral-500 focus:outline-none"
         />
+        <label className="flex items-start gap-2.5 px-1 text-xs text-neutral-600">
+          <input
+            type="checkbox"
+            name="terms"
+            required
+            className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+          />
+          <span>
+            I agree to the{" "}
+            <Link
+              href="/terms"
+              className="font-medium text-accent underline underline-offset-2 hover:text-accent-strong"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="font-medium text-accent underline underline-offset-2 hover:text-accent-strong"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
         <button
           type="submit"
           className="rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
@@ -43,7 +71,7 @@ export default function SignInPage() {
         </button>
       </form>
 
-      <p className="text-center text-xs text-neutral-400">
+      <p className="text-center text-xs text-neutral-500">
         New here? Signing in creates your account automatically.
       </p>
     </main>

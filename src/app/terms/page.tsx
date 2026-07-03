@@ -87,8 +87,9 @@ export default function TermsPage() {
         </li>
         <li>
           <strong>Subscriptions:</strong> unlimited plans that renew automatically each billing
-          period until canceled. You can cancel anytime from your account; cancellation takes effect
-          at the end of the current period, and you keep access until then.
+          period until canceled, subject to reasonable fair-use limits to prevent abuse. You can
+          cancel anytime from your account; cancellation takes effect at the end of the current
+          period, and you keep access until then.
         </li>
       </ul>
       <p>

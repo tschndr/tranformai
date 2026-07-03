@@ -34,7 +34,7 @@ export default function PricingPage() {
           <h2 className="text-lg font-semibold text-neutral-900">Free</h2>
           <p className="mt-2 text-4xl font-semibold tracking-tight text-neutral-900">$0</p>
           <ul className="mt-6 flex flex-col gap-3 text-sm text-neutral-600">
-            {["2 free rewrites per day", "No signup required", "Access to all 334 tools"].map((f) => (
+            {["2 free rewrites per day", "Standard AI model", "Inputs up to 4,000 characters", "All 334 tools"].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <span className="text-accent">✓</span> {f}
               </li>
@@ -50,7 +50,7 @@ export default function PricingPage() {
               $8<span className="text-base font-normal text-neutral-400">/mo</span>
             </p>
             <ul className="mt-6 flex flex-col gap-3 text-sm text-neutral-300">
-              {["Unlimited rewrites, every tool", "No daily caps", "Cancel anytime"].map((f) => (
+              {["Unlimited rewrites, every tool", "Highest-quality AI model", "Longer inputs — up to 12,000 characters", "Cancel anytime"].map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <span className="text-white">✓</span> {f}
                 </li>
@@ -67,7 +67,7 @@ export default function PricingPage() {
                 request={{ plan: "annual" }}
                 className="rounded-full border border-white/30 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
               >
-                Subscribe annually — $64/yr (save 33%)
+                Subscribe annually — $80/yr (2 months free)
               </CheckoutButton>
             </div>
           </div>

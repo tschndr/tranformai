@@ -4,15 +4,32 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { transformations } from "@/db/schema";
 import { CategoryIcon } from "@/components/icons";
+import { categoryDescription } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "All AI Rewriting Tools — Browse 334 Free Tools",
-  description:
-    "Browse every free AI rewriting tool on Rewrite Anything, organized by category — email, resume, blog, code, support, and more.",
-  alternates: { canonical: "/transform" },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  // Search-result views are thin and near-duplicative — keep them out of the
+  // index (but let crawlers follow the tool links) and canonicalize to the hub.
+  if (q?.trim()) {
+    return {
+      title: `Search results for “${q.trim()}”`,
+      robots: { index: false, follow: true },
+      alternates: { canonical: "/transform" },
+    };
+  }
+  return {
+    title: "All AI Rewriting Tools — Browse 334 Free Tools",
+    description:
+      "Browse every free AI rewriting tool on Rewrite Anything, organized by category — email, resume, blog, code, support, and more.",
+    alternates: { canonical: "/transform" },
+  };
+}
 
 function titleCase(value: string) {
   return value
@@ -113,12 +130,12 @@ export default async function TransformHubPage({
         </p>
       </div>
 
-      <form action="/transform" method="GET" className="mx-auto flex w-full max-w-md items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-sm focus-within:border-neutral-400">
+      <form action="/transform" method="GET" className="field-pill mx-auto flex w-full max-w-md items-center gap-2 rounded-full border border-neutral-200 bg-white p-1.5 shadow-sm focus-within:border-neutral-400">
         <input
           name="q"
           aria-label="Search tools"
           placeholder="Search tools…"
-          className="w-full bg-transparent px-4 py-2 text-sm placeholder:text-neutral-400 focus:outline-none"
+          className="w-full bg-transparent px-4 py-2 text-sm placeholder:text-neutral-500 focus:outline-none"
         />
         <button type="submit" className="shrink-0 rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700">
           Search
@@ -130,17 +147,20 @@ export default async function TransformHubPage({
           <Link
             key={c.category}
             href={`/transform/category/${c.category}`}
-            className="group flex items-center justify-between rounded-2xl border border-neutral-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-lg hover:shadow-neutral-900/5"
+            className="group flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-lg hover:shadow-neutral-900/5"
           >
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                <CategoryIcon slug={c.category} className="h-[18px] w-[18px]" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <CategoryIcon slug={c.category} className="h-[18px] w-[18px]" />
+                </span>
+                <span className="font-semibold text-neutral-900">{titleCase(c.category)}</span>
+              </div>
+              <span className="shrink-0 text-sm text-neutral-500 transition-colors group-hover:text-accent">
+                {c.count} →
               </span>
-              <span className="font-semibold text-neutral-900">{titleCase(c.category)}</span>
             </div>
-            <span className="text-sm text-neutral-400 transition-colors group-hover:text-accent">
-              {c.count} →
-            </span>
+            <p className="text-sm text-neutral-500">{categoryDescription(c.category)}</p>
           </Link>
         ))}
       </div>

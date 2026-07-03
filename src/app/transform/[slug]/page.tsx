@@ -6,7 +6,9 @@ import { db } from "@/db";
 import { transformations } from "@/db/schema";
 import { TransformForm } from "@/components/transform-form";
 
-export const dynamic = "force-dynamic";
+// Tool content is static between re-seeds — serve from cache, revalidate hourly
+// (ISR). Unknown slugs are generated on-demand and then cached.
+export const revalidate = 3600;
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -15,6 +17,11 @@ function titleCase(value: string) {
     .split("-")
     .map((w) => w[0].toUpperCase() + w.slice(1))
     .join(" ");
+}
+
+export async function generateStaticParams() {
+  const rows = await db.select({ slug: transformations.slug }).from(transformations);
+  return rows.map((r) => ({ slug: r.slug }));
 }
 
 async function getTransformation(slug: string) {
@@ -118,7 +125,7 @@ export default async function TransformPage({
         <div aria-hidden className="bg-brand-glow pointer-events-none absolute inset-x-0 top-0 h-[380px]" />
         <div className="relative mx-auto max-w-2xl px-6 pb-8 pt-10 text-center">
           {/* Breadcrumbs */}
-          <nav aria-label="Breadcrumb" className="mb-5 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center justify-center gap-1.5 text-xs text-neutral-500">
             <Link href="/" className="hover:text-neutral-600">Home</Link>
             <span>/</span>
             <Link href="/transform" className="hover:text-neutral-600">Tools</Link>
@@ -138,12 +145,23 @@ export default async function TransformPage({
       </section>
 
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-16 px-6 pb-24">
-        <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-lg shadow-neutral-900/5 sm:p-8">
-          <TransformForm
-            slug={transformation.slug}
-            exampleInput={transformation.exampleInput}
-            exampleOutput={transformation.exampleOutput}
-          />
+        <div>
+          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-lg shadow-neutral-900/5 sm:p-8">
+            <TransformForm
+              slug={transformation.slug}
+              exampleInput={transformation.exampleInput}
+              exampleOutput={transformation.exampleOutput}
+            />
+          </div>
+          <p className="mt-4 text-center text-xs text-neutral-500">
+            Free plan includes 2 rewrites a day.{" "}
+            <Link
+              href="/pricing"
+              className="font-medium text-accent underline-offset-2 hover:text-accent-strong hover:underline"
+            >
+              Go unlimited for $8/mo →
+            </Link>
+          </p>
         </div>
 
         <section className="mx-auto max-w-2xl">
@@ -164,7 +182,7 @@ export default async function TransformPage({
               <details key={item.question} className="group p-5 [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer items-center justify-between gap-4 font-medium text-neutral-900">
                   {item.question}
-                  <span className="text-neutral-400 transition-transform group-open:rotate-45">+</span>
+                  <span aria-hidden className="text-neutral-500 transition-transform group-open:rotate-45">+</span>
                 </summary>
                 <p className="mt-3 text-sm leading-relaxed text-neutral-600">{item.answer}</p>
               </details>

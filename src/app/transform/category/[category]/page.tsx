@@ -6,7 +6,8 @@ import { db } from "@/db";
 import { transformations } from "@/db/schema";
 import { CategoryIcon } from "@/components/icons";
 
-export const dynamic = "force-dynamic";
+// Category listings change only on re-seed — cache and revalidate hourly (ISR).
+export const revalidate = 3600;
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -15,6 +16,14 @@ function titleCase(value: string) {
     .split("-")
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+export async function generateStaticParams() {
+  const rows = await db
+    .select({ category: transformations.category })
+    .from(transformations)
+    .groupBy(transformations.category);
+  return rows.map((r) => ({ category: r.category }));
 }
 
 async function getCategoryTools(category: string) {
@@ -53,22 +62,36 @@ export default async function CategoryPage({
 
   const label = titleCase(category);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: appUrl },
-      { "@type": "ListItem", position: 2, name: "All tools", item: `${appUrl}/transform` },
-      { "@type": "ListItem", position: 3, name: `${label} tools`, item: `${appUrl}/transform/category/${category}` },
-    ],
-  };
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: appUrl },
+        { "@type": "ListItem", position: 2, name: "All tools", item: `${appUrl}/transform` },
+        { "@type": "ListItem", position: 3, name: `${label} tools`, item: `${appUrl}/transform/category/${category}` },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `${label} tools`,
+      numberOfItems: tools.length,
+      itemListElement: tools.map((tool, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${appUrl}/transform/${tool.slug}`,
+        name: tool.h1,
+      })),
+    },
+  ];
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="text-center">
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
+        <nav aria-label="Breadcrumb" className="mb-4 flex items-center justify-center gap-1.5 text-xs text-neutral-500">
           <Link href="/" className="hover:text-neutral-600">Home</Link>
           <span>/</span>
           <Link href="/transform" className="hover:text-neutral-600">Tools</Link>

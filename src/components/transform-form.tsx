@@ -16,7 +16,11 @@ export function TransformForm({
   const [output, setOutput] = useState(exampleOutput);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gate, setGate] = useState<{ needsAccount: boolean } | null>(null);
+  const [gate, setGate] = useState<{
+    needsAccount: boolean;
+    reason: "quota" | "length";
+    message: string;
+  } | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [unlimited, setUnlimited] = useState(false);
@@ -38,7 +42,11 @@ export function TransformForm({
       const data = await res.json();
 
       if (res.status === 402) {
-        setGate({ needsAccount: !!data.needsAccount });
+        setGate({
+          needsAccount: !!data.needsAccount,
+          reason: data.reason === "length" ? "length" : "quota",
+          message: data.error ?? "You've reached your free limit.",
+        });
         return;
       }
       if (!res.ok) {
@@ -80,36 +88,44 @@ export function TransformForm({
           <button
             onClick={handleTransform}
             disabled={loading}
+            aria-busy={loading}
             className="self-start rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-700 disabled:opacity-60"
           >
             {loading ? "Rewriting…" : "Rewrite →"}
           </button>
-          {unlimited && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Unlimited plan
-            </span>
-          )}
-          {!unlimited && credits !== null && (
-            <span className="text-xs font-medium text-neutral-500">
-              {credits} {credits === 1 ? "credit" : "credits"} left
-            </span>
-          )}
-          {!unlimited && credits === null && remaining !== null && (
-            <span className="text-xs font-medium text-neutral-500">
-              {remaining} free {remaining === 1 ? "use" : "uses"} left today
-            </span>
-          )}
+          <span role="status" aria-live="polite" className="inline-flex items-center gap-3">
+            {loading && <span className="sr-only">Rewriting your text…</span>}
+            {unlimited && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" /> Unlimited plan
+              </span>
+            )}
+            {!unlimited && credits !== null && (
+              <span className="text-xs font-medium text-neutral-500">
+                {credits} {credits === 1 ? "credit" : "credits"} left
+              </span>
+            )}
+            {!unlimited && credits === null && remaining !== null && (
+              <span className="text-xs font-medium text-neutral-500">
+                {remaining} free {remaining === 1 ? "use" : "uses"} left today
+              </span>
+            )}
+          </span>
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-600">
+            {error}
+          </p>
+        )}
         {gate && (
-          <div className="rounded-2xl border border-accent/20 bg-accent-soft p-4 text-sm">
-            <p className="font-medium text-neutral-900">
-              You&apos;ve used your 2 free rewrites for today.
-            </p>
+          <div role="status" className="rounded-2xl border border-accent/20 bg-accent-soft p-4 text-sm">
+            <p className="font-medium text-neutral-900">{gate.message}</p>
             <p className="mt-1 text-neutral-600">
-              {gate.needsAccount
-                ? "Create a free account to buy credits, or subscribe for unlimited rewrites."
-                : "Buy a credit pack, or subscribe for unlimited rewrites across every tool."}
+              {gate.reason === "length"
+                ? "The Unlimited plan uses our highest-quality model and handles much longer inputs."
+                : gate.needsAccount
+                  ? "Create a free account to buy credits, or subscribe for unlimited rewrites."
+                  : "Buy a credit pack, or subscribe for unlimited rewrites across every tool."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
@@ -141,7 +157,11 @@ export function TransformForm({
             {copied ? "Copied!" : "Copy"}
           </button>
         </div>
-        <div className="min-h-[260px] flex-1 whitespace-pre-wrap rounded-2xl border border-neutral-200 bg-white p-4 text-sm leading-relaxed text-neutral-800 shadow-sm ring-1 ring-neutral-900/5">
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className="min-h-[260px] flex-1 whitespace-pre-wrap rounded-2xl border border-neutral-200 bg-white p-4 text-sm leading-relaxed text-neutral-800 shadow-sm ring-1 ring-neutral-900/5"
+        >
           {output}
         </div>
       </div>

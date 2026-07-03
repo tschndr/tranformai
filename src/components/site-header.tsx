@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { auth } from "@/auth";
 import { Logo } from "@/components/logo";
 import { CategoryIcon, ChevronDown } from "@/components/icons";
+import { MobileMenu } from "@/components/mobile-menu";
+import { HeaderAuth } from "@/components/header-auth";
 
 const POPULAR_CATEGORIES: { slug: string; label: string }[] = [
   { slug: "email", label: "Email" },
@@ -18,9 +19,7 @@ const POPULAR_CATEGORIES: { slug: string; label: string }[] = [
   { slug: "review", label: "Reviews" },
 ];
 
-export async function SiteHeader() {
-  const session = await auth();
-
+export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3.5">
@@ -68,29 +67,8 @@ export async function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {session?.user ? (
-            <Link
-              href="/account"
-              className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
-            >
-              Account
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/sign-in"
-                className="hidden px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900 sm:block"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/transform"
-                className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
-              >
-                Start rewriting
-              </Link>
-            </>
-          )}
+          <HeaderAuth />
+          <MobileMenu categories={POPULAR_CATEGORIES} />
         </div>
       </div>
     </header>
