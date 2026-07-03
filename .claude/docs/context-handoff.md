@@ -32,7 +32,7 @@ Everything below is deployed and verified working end-to-end:
 - ✅ **Live on Vercel** at the custom domain `rewrite-anything.com` with valid SSL.
 - ✅ **Rebrand complete** — "TransformAI" → "Rewrite Anything" with official logo SVGs, logo-matched gradient, icon set, and a categories nav dropdown. Clean monochrome UI (black pill buttons, big tight headlines) + pink→purple→blue accents.
 - ✅ **AI generations work** (Anthropic account funded ~$5; smoke test returns real output).
-- ✅ **Paywall** — 2 free rewrites/day → prepaid credits → unlimited subscription. Tested: credit purchase + subscription + billing portal all confirmed via real Stripe test-mode checkout.
+- ✅ **Paywall — LIVE on Stripe** (as of go-live). 2 free rewrites/day → prepaid credits → unlimited subscription. Live products/prices created via `scripts/stripe-setup.mts` (run in live mode); 7 `STRIPE_*` env vars set in Vercel Production; live Customer Portal enabled. Smoke-tested end-to-end with a **real** credit-pack purchase — credits granted via webhook, Stripe receipt received. Local `.env` intentionally keeps **test** Stripe keys so local dev never creates real charges.
 - ✅ **SEO** — metadata/title-template/OG/Twitter, per-page canonicals, FAQPage + BreadcrumbList + WebApplication JSON-LD, dynamic OG image, sitemap.xml + robots.txt.
 - ✅ **Email sign-in works for all users** — Resend domain `rewrite-anything.com` is verified (SPF/DKIM at GoDaddy); sender is `Rewrite Anything <noreply@rewrite-anything.com>`. Confirmed with a live magic-link test.
 - ✅ **Legal pages** — real `/privacy` and `/terms` (accurate to actual data practices: submitted text is never stored), linked from the footer and included in the sitemap. A **Terms + Privacy acknowledgment checkbox** is required at **sign-in** (`name="terms"`, client `required` + server-enforced via `formData.get("terms")` in the sign-in server action). Checkout has no separate checkbox — paying requires being signed in, so consent is already captured at sign-in. Optional future upgrade: Stripe's native `consent_collection.terms_of_service: "required"` at checkout once a ToS URL is set in the Stripe dashboard.
@@ -91,14 +91,13 @@ Three tiers, checked **in order** in the transform API route:
 
 ## Open tasks / next steps
 
-**None blocking — the product is live and fully functional.** ✅ **Done since last handoff:** Resend domain verification (email now works for everyone), and real Privacy/Terms pages. Current roadmap (being worked through in order):
+**None blocking — the product is live and fully functional.** ✅ **Done:** Resend email verification (works for everyone), real Privacy/Terms pages + sign-in consent checkbox, emblem favicon/icns, a big SEO/a11y/findability/ISR-caching overhaul, paid model+input tiering (Sonnet+12k for subscribers), pricing tweak ($80/yr + fair-use cap), and **Stripe go-live (real payments on)**. Remaining roadmap:
 
-1. **Stripe go-live.** Currently in **TEST mode** (no real money). To take real payments: create live products/prices/webhook by running `scripts/stripe-setup.mts` with a live `sk_live_…` key (it auto-detects mode), then swap the 7 `STRIPE_*` env vars in Vercel + redeploy. Also enable the Stripe **Customer Portal** in live mode (one dashboard click). *Needs a live key from the user.*
-2. **Search Console.** Verify ownership + submit `https://rewrite-anything.com/sitemap.xml`; wait for impression data before building tier-2 (modifier) pages or applying for AdSense (per the brief). *Needs the user's Google account.*
-3. **Google AdSense.** Now unblocked (legal pages exist). Apply, add account/verification + `ads.txt` + ad slots. Gated on real traffic + content depth per the brief. *Needs the user's AdSense account.*
-4. **SEO / search-potential optimization.** Pure code — internal linking, structured-data coverage, metadata quality, LCP/performance, crawlability, content depth. Can be driven solo.
-5. **Sponsorship monetization.** Scope to confirm with the user (direct sponsor placements / sponsored tool slots / GitHub-Sponsors-style vs. ad-network sponsorship), then build placement UI + management path.
-6. **Deferred by design:** tier-2 (modifier) pages — do **not** generate until a parent tool proves search demand.
+1. **Search Console.** Verify ownership + submit `https://rewrite-anything.com/sitemap.xml`; wait for impression data before building tier-2 (modifier) pages or applying for AdSense (per the brief). *Needs the user's Google account.*
+2. **Google AdSense.** Unblocked (legal pages exist). Apply, add account/verification + `ads.txt` + ad slots. Gated on real traffic + content depth per the brief. *Needs the user's AdSense account.*
+3. **Sponsorship monetization.** Scope to confirm (direct sponsor placements / sponsored tool slots / GitHub-Sponsors-style vs. ad-network), then build placement UI + management path.
+4. **Future paid-tier features** (deferred until warranted): saved history + brand-voice presets, batch/CSV mode, Chrome extension — see the paywall section's "Future paid expansions."
+5. **Deferred by design:** tier-2 (modifier) pages — do **not** generate until a parent tool proves search demand.
 
 Contact-email note: the legal pages reference `support@rewrite-anything.com`; set up GoDaddy email forwarding for it so mail is actually received. Governing-law clause in `/terms` is generic ("United States and the state in which we operate") — name a specific state if desired.
 

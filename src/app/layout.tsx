@@ -51,6 +51,7 @@ export const metadata: Metadata = {
       "334 focused AI tools to rewrite, summarize, and transform any text in seconds. Free to start.",
   },
   robots: { index: true, follow: true },
+  verification: { google: "qcTBue_9_nef1L8RNl2b-v383iMB-uJjApTxQhR716M" },
 };
 
 export default function RootLayout({
